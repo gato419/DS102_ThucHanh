@@ -33,4 +33,42 @@ print(f"Kích thước tập Train (chỉ gồm 0 & 1): {X_train.shape}")
 print(f"Kích thước tập Test  (chỉ gồm 0 & 1): {X_test.shape}\n")
 
 def sigmoid(z):
-    return 1/np.exp(-z)
+    return 1/(1+np.exp(-z))
+
+class LogisticRegresstion:
+    def  __init__(self, learning_rate=0.1, iterations=1000):
+        self.learning_rate = learning_rate
+        self.iterations = iterations
+        self.weights = None
+        self.bias = None
+
+    def train(self, X, y):
+        n_samples, n_features = X.shape
+        self.weights = np.random.rand(n_features)
+        self.bias = np.random.random()
+
+        for i in range(self.iterations):
+            linear = X @ self.weights + self.bias
+            y_predict = sigmoid(linear)
+            gradient_w = 1/n_samples*X.T @ (y_predict - y)
+            gradient_b = 1/n_samples * np.sum(y_predict - y)
+
+            self.weights -= self.learning_rate*gradient_w
+            self.bias -= self.learning_rate*gradient_b
+
+            if((i+1)%100 == 0 or i==self.iterations-1):
+                loss = -np.mean(y*np.log(y_predict + 1e-10) + (1 - y)*np.log(1 - y_predict + 1e-10))
+                print(f"{i}    {loss}")
+
+
+    def predict_prob(self, X):
+        linear= X @ self.weights + self.bias
+        return sigmoid(linear)
+
+    def predict(self, X, threshold=0.5):
+        return (self.predict_prob(X) >= threshold).astype(int)
+
+model = LogisticRegresstion(learning_rate=0.1, iterations=1000)
+model.train(X=X_train, y=y_train)
+
+print("Dự đoán:",model.predict(X_test[0]), "Đáp án: ",y_test[0])
